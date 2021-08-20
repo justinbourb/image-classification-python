@@ -10,15 +10,8 @@ import os
 import h5py
 import pandas as pd
 
-# --------------------
-# tunable-parameters
-# --------------------
-images_per_class = 80
-fixed_size = tuple((500, 500))
-train_path = "../../dataset/train"
-h5_data = 'output/data.h5'
-h5_labels = 'output/labels.h5'
-bins = 8
+# import tunable-parameters
+from Python.helpers.tunable_parameters import fixed_size, train_path, images_per_class, bins, h5_labels_path, h5_data_path
 
 
 # feature-descriptor-1: Hu Moments
@@ -107,31 +100,16 @@ def save_output_to_csv(data, file_name):
     pandas_data.to_csv(path)
 
 
-def main_function():
+def generate_descriptors(train_labels):
     """
-    Purpose: This file will analyze the global descriptors for images undergoing image classification.
-        Image classification involves global descriptors (features of the entire image) and local descriptors
-        (features of an area of interest within the image).  This file uses color histograms to analyze color,
-        Hu Moments to analyze shape and Haralick Textures to analyze texture.
-
-        The resulting analysis is output to a HDF5 data.h5 file and labels.h5 file.  The h5 file format was
-        chosen because it is designed for large datasets.
-    :return: nothing
-    Output:  HDF5 Data and labels from all images provided for processing.
+    Purpose: This function generates the global descriptors for the images provided.  It combines three methods
+    Hu Moments, Haralick Texture and Color Histograms into one global descriptor per image.
+    :param train_labels: list of folder names to search for images
+    :return global_features, labels: a numpy array of global features, a numpy array of labels
     """
-    # get the training labels
-    train_labels = os.listdir(train_path)
-
-    # sort the training labels
-    train_labels.sort()
-    print(train_labels)
-    # Expected output:
-    # ['bluebell', 'buttercup', 'coltsfoot', 'cowslip', 'crocus', 'daffodil', 'daisy', 'dandelion', 'fritillary', 'iris', 'lilyvalley', 'pansy', 'snowdrop', 'sunflower', 'tigerlily', 'tulip', 'windflower']
-
     # empty lists to hold feature vectors and labels
     global_features = []
     labels = []
-
     # loop over the training data sub-folders
     for training_name in train_labels:
         # join the training data path and each species training folder
@@ -166,6 +144,76 @@ def main_function():
             global_features.append(global_feature)
 
         print("[STATUS] processed folder: {}".format(current_label))
+    return global_features, labels
+
+
+def save_h5_and_csv(rescaled_features, target):
+    """
+    Purpose: This function saves the data as a h5 file (used for analysis) and as a csv file
+        (used for human readable format).
+    :param rescaled_features:
+    :param target:
+    :return: nothing
+    """
+    # save the feature vector using HDF5
+    h5f_data = h5py.File(h5_data_path, 'w')
+    h5f_data.create_dataset('dataset_1', data=np.array(rescaled_features))
+    # save the labels using HDF5
+    h5f_label = h5py.File(h5_labels_path, 'w')
+    h5f_label.create_dataset('dataset_1', data=np.array(target))
+    # close the HDF5 files
+    h5f_data.close()
+    h5f_label.close()
+    # save the data as csv for a human readable format (not required for analysis)
+    save_output_to_csv(target, 'labels.csv')
+    save_output_to_csv(rescaled_features, 'data.csv')
+
+
+def encode_and_scale(global_features, labels):
+    """
+    Purpose: This function will encode the labels (change the labels from a string name to number 0-16).
+        This function will scale/normalize the features in a range from 0-1.  This is required for accurate
+        machine learning.  Large values will skew the results.
+    :param global_features:
+    :param labels:
+    :return rescaled_features, encoded_labels: the scaled features, the encoded targets
+    """
+    # encode the target labels
+    # This uses from sklearn.preprocessing import LabelEncoder
+    # targetNames = np.unique(labels) # this line is not used, it would provide only unique names
+    le = LabelEncoder()
+    encoded_labels = le.fit_transform(labels)
+    print("[STATUS] training labels encoded...")
+    # scale features in the range (0-1)
+    scaler = MinMaxScaler(feature_range=(0, 1))
+    rescaled_features = scaler.fit_transform(global_features)
+    print("[STATUS] feature vector normalized...")
+    print("[STATUS] target labels: {}".format(encoded_labels))
+    print("[STATUS] target labels shape: {}".format(encoded_labels.shape))
+    return rescaled_features, encoded_labels
+
+
+def main_function():
+    """
+    Purpose: This file will analyze the global descriptors for images undergoing image classification.
+        Image classification involves global descriptors (features of the entire image) and local descriptors
+        (features of an area of interest within the image).  This file uses color histograms to analyze color,
+        Hu Moments to analyze shape and Haralick Textures to analyze texture.
+
+        The resulting analysis is output to a HDF5 data.h5 file and labels.h5 file.  The h5 file format was
+        chosen because it is designed for large datasets.
+    :return: nothing
+    Output:  HDF5 Data and labels from all images provided for processing.
+    """
+    # get the training labels
+    train_labels = os.listdir(train_path)
+
+    # sort the training labels
+    train_labels.sort()
+    # Expected output:
+    # ['bluebell', 'buttercup', 'coltsfoot', 'cowslip', 'crocus', 'daffodil', 'daisy', 'dandelion', 'fritillary', 'iris', 'lilyvalley', 'pansy', 'snowdrop', 'sunflower', 'tigerlily', 'tulip', 'windflower']
+
+    global_features, labels = generate_descriptors(train_labels)
 
     print("[STATUS] completed Global Feature Extraction...")
 
@@ -175,35 +223,10 @@ def main_function():
     # get the overall training label size
     print("[STATUS] training Labels {}".format(np.array(labels).shape))
 
-    # encode the target labels
-    # targetNames = np.unique(labels) # this line is not used
-    le = LabelEncoder()
-    target = le.fit_transform(labels)
-    print("[STATUS] training labels encoded...")
+    # encode and scale features and labels
+    rescaled_features, encoded_labels = encode_and_scale(global_features, labels)
 
-    # scale features in the range (0-1)
-    scaler = MinMaxScaler(feature_range=(0, 1))
-    rescaled_features = scaler.fit_transform(global_features)
-    print("[STATUS] feature vector normalized...")
-
-    print("[STATUS] target labels: {}".format(target))
-    print("[STATUS] target labels shape: {}".format(target.shape))
-
-    # save the feature vector using HDF5
-    h5f_data = h5py.File(h5_data, 'w')
-    h5f_data.create_dataset('dataset_1', data=np.array(rescaled_features))
-
-    # save the labels using HDF5
-    h5f_label = h5py.File(h5_labels, 'w')
-    h5f_label.create_dataset('dataset_1', data=np.array(target))
-
-    # close the HDF5 files
-    h5f_data.close()
-    h5f_label.close()
-
-    # save the data as csv for a human readable format (not required for analysis)
-    save_output_to_csv(target, 'labels.csv')
-    save_output_to_csv(rescaled_features, 'data.csv')
+    save_h5_and_csv(rescaled_features, encoded_labels)
 
     print("[STATUS] end of training..")
 

@@ -31,51 +31,20 @@ from Python.helpers.tunable_parameters import num_trees, test_size, seed, train_
 warnings.filterwarnings('ignore')
 
 
-def main_function():
+def test_model(clf, train_labels):
     """
-    Purpose: This is the main function to execute the script.  This file will perform image classification
-        analysis.
+    Purpose: This function tests the trained model using unseen data.  The function as written does
+        not do any analysis, since the test folder is empty.
+    :param trainDataGlobal: a numpy array of the concatenated global descriptors
+    :param trainLabelsGlobal: a numpy array of the encoded lables (0-16)
+    :param train_labels: a list of the folder / flower names
     :return: nothing
     """
-    # get the training labels
-    train_labels = os.listdir(train_path)
-
-    # sort the training labels
-    train_labels.sort()
-
-    if not os.path.exists(test_path):
-        os.makedirs(test_path)
-
-
-    # import the feature vector and trained labels
-    global_features, global_labels = import_feature_and_labels()
-
-    # verify the shape of the feature vector and labels
-    print("[STATUS] features shape: {}".format(global_features.shape))
-    print("[STATUS] labels shape: {}".format(global_labels.shape))
-
-    print("[STATUS] training started...")
-
-    # split the training and testing data
-    # this function is provided by the scikit-learn library
-    # it uses k-fold cross validation to split the data into 9 training sets and 1 test set
-    (trainDataGlobal, testDataGlobal, trainLabelsGlobal, testLabelsGlobal) = train_test_split(np.array(global_features),
-                                                                                              np.array(global_labels),
-                                                                                              test_size=test_size,
-                                                                                         random_state=seed)
-
-
     # -----------------------------------
     # TESTING OUR MODEL
     # -----------------------------------
-
-    # create the model - Random Forests
-    clf = RandomForestClassifier(n_estimators=num_trees, random_state=seed)
-
-    # fit the training data to the model
-    clf.fit(trainDataGlobal, trainLabelsGlobal)
-
     # loop through the test images
+    # glob module finds all path names matching a specified pattern
     for file in glob.glob(test_path + "/*.jpg"):
         # read the image
         image = cv2.imread(file)
@@ -109,6 +78,60 @@ def main_function():
         plt.imshow(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
         plt.show()
 
+
+def train_model(trainDataGlobal, trainLabelsGlobal):
+    # create the model - Random Forests
+    clf = RandomForestClassifier(n_estimators=num_trees, random_state=seed)
+    # fit the training data to the model
+    clf.fit(trainDataGlobal, trainLabelsGlobal)
+    return clf
+
+def test_train_model(clf, testDataGlobal):
+    # predict label of test image
+    print(len(testDataGlobal))
+
+
+
+
+def main_function():
+    """
+    Purpose: This is the main function to execute the script.  This file will perform image classification
+        analysis.
+    :return: nothing
+    """
+    # get the training labels
+    train_labels = os.listdir(train_path)
+
+    # sort the training labels
+    train_labels.sort()
+
+    if not os.path.exists(test_path):
+        os.makedirs(test_path)
+
+
+    # import the feature vector and trained labels
+    global_features, global_labels = import_feature_and_labels()
+
+    # verify the shape of the feature vector and labels
+    print("[STATUS] features shape: {}".format(global_features.shape))
+    print("[STATUS] labels shape: {}".format(global_labels.shape))
+
+    print("[STATUS] training started...")
+
+    # split the training and testing data
+    # this function is provided by the scikit-learn library
+    # it uses k-fold cross validation to split the data into 9 training sets and 1 test set
+    (trainDataGlobal, testDataGlobal, trainLabelsGlobal, testLabelsGlobal) = train_test_split(np.array(global_features),
+                                                                                              np.array(global_labels),
+                                                                                              test_size=test_size,
+                                                                                         random_state=seed)
+    # train the model
+    clf = train_model(trainDataGlobal, trainLabelsGlobal)
+    # test the model
+    # test_model(clf, trainLabelsGlobal, train_labels)
+    # test_train_model(clf, testDataGlobal)
+    # print(testLabelsGlobal) # have a list of the folders flowers belong to... but which image are these?
+    # running clf.predict(testDataGlobal) results in every prediction being 3
 
 if __name__ == "__main__":
     main_function()
