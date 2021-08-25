@@ -43,8 +43,7 @@ as criticism.
     * source code does not produce any predictions
         * train_test.py relies on a user manually placing test images into 
         the test directory
-    * refactored version automatically tests the segmented test data
-        created by train_test.py
+    * source code test prediction code does not provide accurate predictions (every picture is the same)
 
 ## Lessons learned
 * image classification in Python using sklearn, opencv, pandas, matplotlib and mahotas
