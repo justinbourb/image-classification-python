@@ -137,7 +137,7 @@ def rescale_features_func(global_features):
     Reasoning: Global features need to be scaled for analysis purposes.  Large values skew the results.
     """
     # scale features in the range (-1 to 1)
-    scaler = MinMaxScaler(feature_range=(-1, 1))
+    scaler = MinMaxScaler(feature_range=(0, 1))
     rescaled_features = scaler.fit_transform(global_features)
     return rescaled_features
 

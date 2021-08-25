@@ -46,10 +46,10 @@ def test_model(clf, train_labels):
         image = cv2.resize(image, fixed_size)
         # calculate the global features
         global_features = global_feature_analysis(image)
-        # scale the features
-        rescaled_features = rescale_features_func([global_features])
+            
         # predict which flower the image shows
-        prediction = clf.predict(rescaled_features)
+        # clf.predict requires 2D arrays, this is why [global_features] is used
+        prediction = clf.predict([global_features])
 
         # create the prediction text to show on the image
         prediction_string = str(train_labels[prediction[0]])
