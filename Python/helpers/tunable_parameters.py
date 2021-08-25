@@ -23,6 +23,7 @@ train_path = os.path.join(dirname, "image-classification-python/dataset/train")
 test_path = os.path.join(dirname, "image-classification-python/dataset/test")
 h5_data_path = os.path.join(dirname, "image-classification-python/output/data.h5")
 h5_labels_path = os.path.join(dirname, "image-classification-python/output/labels.h5")
+output_path = os.path.join(dirname, "image-classification-python/output")
 scoring = "accuracy"
 fixed_size = tuple((500, 500))
 images_per_class = 80

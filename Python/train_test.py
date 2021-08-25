@@ -8,14 +8,11 @@ import glob
 import cv2
 import warnings
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import MinMaxScaler
 from sklearn.ensemble import RandomForestClassifier
-# from sklearn.externals import joblib # does not work
+
 
 # import these functions from generate_global_descriptors.py
-from Python.helpers.generate_global_descriptors import fd_hu_moments
-from Python.helpers.generate_global_descriptors import fd_haralick
-from Python.helpers.generate_global_descriptors import fd_histogram
+from Python.helpers.generate_global_descriptors import global_feature_analysis, rescale_features_func
 # import this variable from generate_global_descriptors.py
 from Python.helpers.generate_global_descriptors import fixed_size
 
@@ -35,8 +32,6 @@ def test_model(clf, train_labels):
     """
     Purpose: This function tests the trained model using unseen data.  The function as written does
         not do any analysis, since the test folder is empty.
-    :param trainDataGlobal: a numpy array of the concatenated global descriptors
-    :param trainLabelsGlobal: a numpy array of the encoded lables (0-16)
     :param train_labels: a list of the folder / flower names
     :return: nothing
     """
@@ -46,35 +41,26 @@ def test_model(clf, train_labels):
     # loop through the test images
     # glob module finds all path names matching a specified pattern
     for file in glob.glob(test_path + "/*.jpg"):
-        # read the image
+        # read and resize the image using cv2
         image = cv2.imread(file)
-
-        # resize the image
         image = cv2.resize(image, fixed_size)
+        # calculate the global features
+        global_features = global_feature_analysis(image)
+            
+        # predict which flower the image shows
+        # clf.predict requires 2D arrays, this is why [global_features] is used
+        prediction = clf.predict([global_features])
 
-        ####################################
-        # Global Feature extraction
-        ####################################
-        fv_hu_moments = fd_hu_moments(image)
-        fv_haralick = fd_haralick(image)
-        fv_histogram = fd_histogram(image)
-
-        ###################################
-        # Concatenate global features
-        ###################################
-        global_feature = np.hstack([fv_histogram, fv_haralick, fv_hu_moments])
-
-        # scale features in the range (0-1)
-        scaler = MinMaxScaler(feature_range=(0, 1))
-        rescaled_feature = scaler.fit_transform(global_feature)
-
-        # predict label of test image
-        prediction = clf.predict(rescaled_feature.reshape(1, -1))[0]
+        # create the prediction text to show on the image
+        prediction_string = str(train_labels[prediction[0]])
+        actual_string = str(file).split("\\")[-1]
+        text = "P: " + prediction_string + " A: " + actual_string
 
         # show predicted label on image
-        cv2.putText(image, train_labels[prediction], (20, 30), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 255, 255), 3)
+        cv2.putText(image, text, (20, 30), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 255, 255), 3)
 
         # display the output image
+        plt.figure()
         plt.imshow(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
         plt.show()
 
@@ -85,12 +71,6 @@ def train_model(trainDataGlobal, trainLabelsGlobal):
     # fit the training data to the model
     clf.fit(trainDataGlobal, trainLabelsGlobal)
     return clf
-
-def test_train_model(clf, testDataGlobal):
-    # predict label of test image
-    print(len(testDataGlobal))
-
-
 
 
 def main_function():
@@ -108,15 +88,8 @@ def main_function():
     if not os.path.exists(test_path):
         os.makedirs(test_path)
 
-
     # import the feature vector and trained labels
     global_features, global_labels = import_feature_and_labels()
-
-    # verify the shape of the feature vector and labels
-    print("[STATUS] features shape: {}".format(global_features.shape))
-    print("[STATUS] labels shape: {}".format(global_labels.shape))
-
-    print("[STATUS] training started...")
 
     # split the training and testing data
     # this function is provided by the scikit-learn library
@@ -128,7 +101,7 @@ def main_function():
     # train the model
     clf = train_model(trainDataGlobal, trainLabelsGlobal)
     # test the model
-    # test_model(clf, trainLabelsGlobal, train_labels)
+    test_model(clf, train_labels)
     # test_train_model(clf, testDataGlobal)
     # print(testLabelsGlobal) # have a list of the folders flowers belong to... but which image are these?
     # running clf.predict(testDataGlobal) results in every prediction being 3
