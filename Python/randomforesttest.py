@@ -1,23 +1,26 @@
+import os
+
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.datasets import make_classification
 import numpy as np
 from sklearn.model_selection import train_test_split
-from Python.train_test import import_feature_and_labels
-from Python.helpers.tunable_parameters import test_size, seed, num_trees
+from Python.helpers.import_data import import_feature_and_labels
+from Python.helpers.tunable_parameters import test_size, seed, num_trees, train_path
+from Python.train_test import train_model
 
-def example():
-	X, y = make_classification(n_samples=1000, n_features=4,
-	                           n_informative=2, n_redundant=0,
-	                           random_state=0, shuffle=False)
-	clf = RandomForestClassifier(max_depth=2, random_state=0)
-	clf.fit(X, y)
+train_labels = os.listdir(train_path)
+print(train_labels)
+train_labels.sort()
+print(train_labels)
 
-	print(X)
-	# throws error with single brackets
-	print(clf.predict([[-1, -1, -1, -1]]))
-
-
-def something():
+def test_prediction_feature():
+	"""
+	Purpose: This function will verify the clf.predict() feature is working correctly on our data set.
+		Each item's prediction is printed to the screen and the user can verify that different items are
+		getting different predictions.
+	:return: Nothing
+	Output: Prints a list of predictions.
+	"""
 	global_features, global_labels = import_feature_and_labels()
 
 	# split the training and testing data
@@ -28,15 +31,10 @@ def something():
 	                                                                                          test_size=test_size,
 	                                                                                          random_state=seed)
 	# create the model - Random Forests
-	clf = RandomForestClassifier(n_estimators=num_trees, random_state=seed)
-	# fit the training data to the model
-	clf.fit(trainDataGlobal, trainLabelsGlobal)
+	clf = train_model(trainDataGlobal, trainLabelsGlobal)
 
-	a = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
-	print(np.where(a == 3))
-
-
+	# visually verify different predictions are being made
 	for item in testDataGlobal:
-		# print(clf.predict([item]))
-		pass
-something()
+		print(clf.predict([item]))
+
+test_prediction_feature()

@@ -1,19 +1,14 @@
+import os
+
 from Python.helpers.import_data import import_feature_and_labels
 from sklearn.preprocessing import LabelEncoder
 import numpy as np
-features, labels = import_feature_and_labels()
+import pandas as pd
 
+from Python.helpers.tunable_parameters import train_path
 
-encoded_to_name_dic = {0: 'bluebell', 1: 'buttercup', 2: 'coltsfoot', 3: 'cowslip', 4: 'crocus', 5: 'daffodil',
-                       6: 'daisy', 7: 'dandelion', 8: 'fritillary', 9: 'iris', 10: 'lilyvalley', 11: 'pansy',
-                       12: 'snowdrop', 13: 'sunflower', 14: 'tigerlily', 15: 'tulip', 16: 'windflower'}
-le = LabelEncoder()
-encoded_labels = le.fit_transform(labels)
-names = ['bluebell', 'buttercup', 'coltsfoot', 'cowslip', 'crocus', 'daffodil', 'daisy', 'dandelion', 'fritillary', 'iris', 'lilyvalley', 'pansy', 'snowdrop', 'sunflower', 'tigerlily', 'tulip', 'windflower']
-some_dict = {}
-# for each unique value in encoded labels (expected 0-16)
-# match the numbers to their original name and store the results in a dictionary
-# example: {0:'bluebell', etc}
-for label in np.unique(encoded_labels):
-	some_dict[label] = names.pop(0)
-print(some_dict)
+train_labels = os.listdir(train_path)
+print(train_labels)
+
+# train_test global_features value
+# [1.01004122e-02 2.08000001e-02 1.13215916e-01 2.18870789e-01, 2.14277096e-02 1.21147878e-01 2.66947597e-01 1.12987660e-01, 1.02716056e-03 8.63385499e-02 3.93459536e-02 1.32104252e-02, 3.43813449e-02 1.26397805e-02 7.17015117e-02 8.87352601e-03, 8.27434880e-04 3.14995907e-02 7.61810737e-03 5.19286701e-03, 2.87034307e-02 6.79067243e-03 2.70770919e-02 1.10134436e-02, 3.42386833e-04 3.76625522e-03 0.00000000e+00 3.16707836e-03, 1.78897120e-02 9.98628326e-03 1.92021951e-02 8.70233215e-03, 1.14128947e-04 1.14128947e-04 0.00000000e+00 2.99588474e-03, 2.97876559e-02 4.01448570e-02 3.12427990e-02 1.06425239e-02, 0.00000000e+00 0.00000000e+00 0.00000000e+00 4.85048024e-03, 2.10853238e-02 3.89750339e-02 2.36532241e-02 8.64526816e-03, 0.00000000e+00 0.00000000e+00 0.00000000e+00 2.08285335e-03, 1.18123461e-02 1.99440327e-02 1.88312761e-03 0.00000000e+00, 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00, 5.70644734e-05 0.00000000e+00 0.00000000e+00 0.00000000e+00, 1.74046645e-03 4.080109...

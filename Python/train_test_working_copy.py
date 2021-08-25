@@ -31,6 +31,8 @@ from Python.helpers.generate_global_descriptors import fixed_size
 # to visualize results
 import matplotlib.pyplot as plt
 
+from Python.helpers.tunable_parameters import h5_data_path, h5_labels_path
+
 # this silences warnings such a depreciation warnings
 warnings.filterwarnings('ignore')
 
@@ -54,8 +56,8 @@ def import_feature_and_labels():
     :return: a numpy array of the global features and global labels
     """
     # import the feature vector and trained labels
-    h5f_data = h5py.File(h5_data, 'r')
-    h5f_label = h5py.File(h5_labels, 'r')
+    h5f_data = h5py.File(h5_data_path, 'r')
+    h5f_label = h5py.File(h5_labels_path, 'r')
 
     global_features_string = h5f_data['dataset_1']
     global_labels_string = h5f_label['dataset_1']
