@@ -53,3 +53,10 @@ as criticism.
 * good documentation practices
 * working with h5py data sets for big data
 * experience with machine learning development tools
+
+
+## Example results
+P = Machine Learning Prediction  A = Actual Image label  
+[<img src="https://github.com/justinbourb/image-classification-python/blob/master/result_images/bluebell.JPG">]
+[<img src="https://github.com/justinbourb/image-classification-python/blob/master/result_images/buttercup.JPG">]
+[<img src="https://github.com/justinbourb/image-classification-python/blob/master/result_images/coltsfoot.JPG">]
