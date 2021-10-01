@@ -57,6 +57,6 @@ as criticism.
 
 ## Example results
 P = Machine Learning Prediction  A = Actual Image label  
-[<img src="https://github.com/justinbourb/image-classification-python/blob/master/result_images/bluebell.JPG">]
-[<img src="https://github.com/justinbourb/image-classification-python/blob/master/result_images/buttercup.JPG">]
-[<img src="https://github.com/justinbourb/image-classification-python/blob/master/result_images/coltsfoot.JPG">]
+<img src="https://github.com/justinbourb/image-classification-python/blob/master/result_images/bluebell.JPG">
+<img src="https://github.com/justinbourb/image-classification-python/blob/master/result_images/buttercup.JPG">
+<img src="https://github.com/justinbourb/image-classification-python/blob/master/result_images/coltsfoot.JPG">
